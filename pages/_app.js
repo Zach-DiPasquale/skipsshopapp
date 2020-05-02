@@ -1,4 +1,5 @@
 import ApolloClient from "apollo-boost";
+import fetch from "node-fetch";
 import { ApolloProvider } from "react-apollo";
 import App from "next/app";
 import { AppProvider } from "@shopify/polaris";
@@ -9,8 +10,9 @@ import translations from "@shopify/polaris/locales/en.json";
 
 const client = new ApolloClient({
   fetchOptions: {
-    credentials: "include"
-  }
+    credentials: "include",
+  },
+  fetch,
 });
 class MyApp extends App {
   render() {
@@ -18,18 +20,18 @@ class MyApp extends App {
     const shopOrigin = Cookies.get("shopOrigin");
     return (
       <AppProvider i18n={translations}>
-          <Provider
-            config={{
-              apiKey: API_KEY,
-              shopOrigin: shopOrigin,
-              forceRedirect: true
-            }}
-          >
-            <ApolloProvider client={client}>
-              <Component {...pageProps} />
-            </ApolloProvider>
-          </Provider>
-        </AppProvider>
+        <Provider
+          config={{
+            apiKey: API_KEY,
+            shopOrigin: shopOrigin,
+            forceRedirect: true,
+          }}
+        >
+          <ApolloProvider client={client}>
+            <Component {...pageProps} />
+          </ApolloProvider>
+        </Provider>
+      </AppProvider>
     );
   }
 }
