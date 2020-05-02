@@ -45,13 +45,8 @@ app.prepare().then(() => {
         //Auth token and shop available in session
         //Redirect to shop upon auth
         const { shop, accessToken } = ctx.session;
-        await handlers.registerWebhooks(
-          shop,
-          accessToken,
-          "PRODUCTS_UPDATE",
-          "/webhooks/products/update",
-          ApiVersion.October19
-        );
+
+        await handlers.registerProductUpdate(shop, accessToken);
 
         ctx.cookies.set("shopOrigin", shop, {
           httpOnly: false,
@@ -64,7 +59,7 @@ app.prepare().then(() => {
   );
   server.use(
     graphQLProxy({
-      version: ApiVersion.October19
+      version: ApiVersion.April20
     })
   );
   router.post("/webhooks/products/update", webhook, ctx => {

@@ -1,6 +1,6 @@
 import ApolloClient from "apollo-boost";
 import { ApolloProvider } from "react-apollo";
-import App, { Container } from "next/app";
+import App from "next/app";
 import { AppProvider } from "@shopify/polaris";
 import { Provider } from "@shopify/app-bridge-react";
 import Cookies from "js-cookie";
@@ -17,8 +17,7 @@ class MyApp extends App {
     const { Component, pageProps } = this.props;
     const shopOrigin = Cookies.get("shopOrigin");
     return (
-      <Container>
-        <AppProvider i18n={translations}>
+      <AppProvider i18n={translations}>
           <Provider
             config={{
               apiKey: API_KEY,
@@ -31,7 +30,6 @@ class MyApp extends App {
             </ApolloProvider>
           </Provider>
         </AppProvider>
-      </Container>
     );
   }
 }
