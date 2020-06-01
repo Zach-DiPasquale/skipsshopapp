@@ -53,10 +53,6 @@ app.prepare().then(() => {
             //Redirect to shop upon auth
             const { shop, accessToken } = ctx.session;
 
-            if (!["zach-d-test-store.myshopify.com"].contains(shop)) {
-              ctx.status = 403;
-              return;
-            }
             const shopAccess = new Access();
             shopAccess.shop = shop;
             shopAccess.oauthToken = accessToken;
