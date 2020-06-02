@@ -34,7 +34,7 @@ router.post("/", async (ctx) => {
   const body = ctx.request.body;
   const baseProductId = body.baseProductId;
   const sellByWeight = body.sellByWeight;
-  const unit = body.unit;
+  const weightUnit = body.weightUnit;
   const variants = body.variants;
 
   if (variants.length > 3) {
@@ -75,6 +75,9 @@ router.post("/", async (ctx) => {
     product = await getProduct(baseProductId);
   }
 
+  product.sellByWeight = sellByWeight;
+  product.weightUnit = weightUnit;
+
   const { shop, accessToken } = ctx.session;
 
   if (product.variantShopifyProductId == undefined) {
@@ -84,12 +87,13 @@ router.post("/", async (ctx) => {
       baseProductId
     );
     product.variantShopifyProductId = newProduct.id;
-    updateShopifyProduct(product);
   } else {
     console.log(
       "Variant product already exist, skipping creation of new product."
     );
   }
+
+  await updateShopifyProduct(product);
 
   await deleteAllShopifyVariants(shop, accessToken, baseProductId);
 

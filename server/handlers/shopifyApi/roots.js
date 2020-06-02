@@ -12,3 +12,9 @@ export const productCreate = (host) =>
 
 export const variants = (host, productId, variantId) =>
   `https://${host}${basePath}/products/${productId}/variants/${variantId}.json`;
+
+export const productMetafieldCreate = (host, productId) =>
+  `https://${host}${basePath}/products/${productId}/metafields.json`;
+
+export const productMetafieldUpdate = (host, productId, metafieldId) =>
+  `https://${host}${basePath}/products/${productId}/metafields/${metafieldId}.json`;

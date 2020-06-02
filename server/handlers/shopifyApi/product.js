@@ -1,6 +1,10 @@
 import fetch from "node-fetch";
 
-import { productGetUpdate, productCreate } from "./roots";
+import {
+  productGetUpdate,
+  productCreate,
+  productMetafieldCreate,
+} from "./roots";
 
 export const getShopifyProduct = async (shop, accessToken, productId) => {
   return fetch(productGetUpdate(shop, productId), {
@@ -79,4 +83,50 @@ export const duplicateShopifyProduct = async (shop, accessToken, product) => {
   await updateShopifyProduct(shop, accessToken, updatedBaseProduct);
 
   return newProductResponse.product;
+};
+
+export const createShopifyProductMetafield = async (
+  shop,
+  accessToken,
+  productId,
+  metafield
+) => {
+  return fetch(productMetafieldCreate(shop, productId), {
+    method: "POST",
+    body: JSON.stringify({ metafield }),
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": accessToken,
+    },
+  })
+    .then((res) => res.json())
+    .then((json) => json)
+    .catch(() => {
+      console.warn(
+        `Something went wrong when creating the product metafield. The unit price is likely not being displayed on the website. ${e}`
+      );
+    });
+};
+
+export const updateShopifyProductMetadata = async (
+  shop,
+  accessToken,
+  productId,
+  metafield
+) => {
+  return fetch(productMetafieldUpdate(shop, productId, metafield.id), {
+    method: "PUT",
+    body: JSON.stringify({ metafield }),
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": accessToken,
+    },
+  })
+    .then((res) => res.json())
+    .then((json) => json)
+    .catch((e) => {
+      console.warn(
+        `Something went wrong when creating the product metafield. The unit price is likely not being displayed on the website. ${e}`
+      );
+    });
 };

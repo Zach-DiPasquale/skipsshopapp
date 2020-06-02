@@ -48,7 +48,7 @@ const fetcher = async (path) => {
   return fetch(path)
     .then((res) => {
       if (res.status === 404) {
-        return { variantGroups: [] };
+        return { sellByWeight: false, weightUnit: "lb", variantGroups: [] };
       }
       if (!res.ok) {
         throw Error(res.statusText);
@@ -62,8 +62,8 @@ const fetcher = async (path) => {
 };
 
 function FormOnSubmitExample({ price, productId, product }) {
-  const [sellByWeight, setSellByWeight] = useState(false);
-  const [unitSelected, setUnitSelected] = useState("LB");
+  const [sellByWeight, setSellByWeight] = useState(product.sellByWeight);
+  const [unitSelected, setUnitSelected] = useState(product.weightUnit);
 
   const [variants, setVariants] = useState(product.variantGroups);
 
@@ -110,7 +110,7 @@ function FormOnSubmitExample({ price, productId, product }) {
     const body = {
       baseProductId: productId,
       sellByWeight: sellByWeight,
-      unit: unitSelected,
+      weightUnit: unitSelected,
       variants: variants,
     };
     setErrorMessage("");
@@ -135,8 +135,8 @@ function FormOnSubmitExample({ price, productId, product }) {
   };
 
   const unitOptions = [
-    { label: "lb.", value: "LB" },
-    { label: "oz.", value: "OZ" },
+    { label: "lb.", value: "lb" },
+    { label: "oz.", value: "oz" },
   ];
 
   const variantOptions = [

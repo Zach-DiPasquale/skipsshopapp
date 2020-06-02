@@ -55,7 +55,12 @@ export const updateShopifyProduct = async (product) => {
   return await getConnection()
     .createQueryBuilder()
     .update(Product)
-    .set({ variantShopifyProductId: product.variantShopifyProductId })
+    .set({
+      variantShopifyProductId: product.variantShopifyProductId,
+      sellByWeight: product.sellByWeight,
+      weightUnit: product.weightUnit,
+      priceStringMetafieldShopifyId: product.priceStringMetafieldShopifyId,
+    })
     .where("baseShopifyProductId = :id", { id: product.baseShopifyProductId })
     .execute()
     .catch((e) => console.log(e));

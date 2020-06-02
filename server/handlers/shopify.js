@@ -4,7 +4,12 @@ import { Variant } from "../database/models/Variant";
 import { getAllVariantsForProductId, getProduct } from "./db/product";
 import { deleteShopifyVariant } from "./shopifyApi/variants";
 import { deleteVariantGroup } from "./db/variant-group";
-import { updateShopifyProduct, getShopifyProduct } from "./shopifyApi/product";
+import {
+  updateShopifyProduct,
+  getShopifyProduct,
+  updateShopifyProductMetadata,
+  createShopifyProductMetafield,
+} from "./shopifyApi/product";
 import { ShopifyVariant } from "../database/models/ShopifyVariant";
 import {
   deleteAllShopifyVariants as removeAllShopVariants,
@@ -127,6 +132,9 @@ export const syncVariants = async (shop, accessToken, productId) => {
     });
   }
   await createShopifyVariants(variants);
+
+  await updateMetafield(shop, accessToken, product, productUnitPrice);
+
   return { error: false, message: "" };
 };
 
@@ -274,5 +282,48 @@ export const autoUpdateVariants = async (shop, product) => {
       id: p.variantShopifyProductId,
       variants: newVariants,
     });
+
+    updateMetafield(shop, access.oauthToken, p, product.variants[0].price);
+  }
+};
+
+const updateMetafield = async (
+  shop,
+  accessToken,
+  product,
+  productUnitPrice
+) => {
+  let priceString = "";
+
+  if (product.sellByWeight) {
+    priceString = `$${productUnitPrice}/${product.weightUnit}`;
+  }
+
+  let metafield = {
+    key: "SellByWeightPriceString",
+    value: priceString,
+    value_type: "string",
+    namespace: "global",
+  };
+
+  if (!product.priceStringMetafieldShopifyId) {
+    let res = await createShopifyProductMetafield(
+      shop,
+      accessToken,
+      product.variantShopifyProductId,
+      metafield
+    );
+    console.log("create");
+    console.log(res);
+  } else {
+    metafield.id = product.priceStringMetafieldShopifyId;
+    let res = await updateShopifyProductMetadata(
+      shop,
+      accessToken,
+      product.variantShopifyProductId,
+      metafield
+    );
+    console.log("update");
+    console.log(res);
   }
 };
