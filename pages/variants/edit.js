@@ -113,7 +113,7 @@ function FormOnSubmitExample({ price, productId, product }) {
       variants: variants,
     };
     setErrorMessage("");
-    fetch("https://232866b86a0b.ngrok.io/api/variants", {
+    fetch("https://shop-skips-meat-market.myshopify.com/api/variants", {
       method: "POST",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
@@ -450,7 +450,7 @@ const VariantEdit = () => {
   });
 
   const { data: product, APIerror } = useSWR(
-    "https://232866b86a0b.ngrok.io/api/variants/" + productId,
+    "https://shop-skips-meat-market.myshopify.com/api/variants/" + productId,
     fetcher
   );
 
