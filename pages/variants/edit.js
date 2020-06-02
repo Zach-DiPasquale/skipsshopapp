@@ -113,7 +113,7 @@ function FormOnSubmitExample({ price, productId, product }) {
       variants: variants,
     };
     setErrorMessage("");
-    fetch("https://shop-skips-meat-market.myshopify.com/api/variants", {
+    fetch("https://skipsshopapp.herokuapp.com/api/variants", {
       method: "POST",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
@@ -450,7 +450,7 @@ const VariantEdit = () => {
   });
 
   const { data: product, APIerror } = useSWR(
-    "https://shop-skips-meat-market.myshopify.com/api/variants/" + productId,
+    "https://skipsshopapp.herokuapp.com/api/variants/" + productId,
     fetcher
   );
 
