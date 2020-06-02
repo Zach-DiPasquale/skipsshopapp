@@ -48,7 +48,7 @@ const fetcher = async (path) => {
   return fetch(path)
     .then((res) => {
       if (res.status === 404) {
-        return [];
+        return { variantGroups: [] };
       }
       if (!res.ok) {
         throw Error(res.statusText);
@@ -64,6 +64,7 @@ const fetcher = async (path) => {
 function FormOnSubmitExample({ price, productId, product }) {
   const [sellByWeight, setSellByWeight] = useState(false);
   const [unitSelected, setUnitSelected] = useState("LB");
+
   const [variants, setVariants] = useState(product.variantGroups);
 
   const [errorToastActive, setErrorToastActive] = useState(false);
@@ -113,7 +114,7 @@ function FormOnSubmitExample({ price, productId, product }) {
       variants: variants,
     };
     setErrorMessage("");
-    fetch("https://skipsshopapp.herokuapp.com/api/variants", {
+    fetch("/api/variants", {
       method: "POST",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
@@ -450,7 +451,7 @@ const VariantEdit = () => {
   });
 
   const { data: product, APIerror } = useSWR(
-    "https://skipsshopapp.herokuapp.com/api/variants/" + productId,
+    "/api/variants/" + productId,
     fetcher
   );
 

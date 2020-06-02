@@ -59,6 +59,7 @@ export const duplicateShopifyProduct = async (shop, accessToken, product) => {
     title: `AUTOMATIC (DO NOT TOUCH) ${product.title}`,
     handle: `auth-${product.handle}`,
     published: false,
+    tags: `${product.tags}, auto`,
   };
 
   await updateShopifyProduct(shop, accessToken, updatedBaseProduct);
@@ -68,5 +69,14 @@ export const duplicateShopifyProduct = async (shop, accessToken, product) => {
     accessToken,
     newProduct
   );
+
+  updatedBaseProduct = {
+    id: product.id,
+    body_html: `If you see this product please contact us! <a href="/products/${newProductResponse.product.handle}">Click here to go to the correct product</a>`,
+    published: false,
+  };
+
+  await updateShopifyProduct(shop, accessToken, updatedBaseProduct);
+
   return newProductResponse.product;
 };

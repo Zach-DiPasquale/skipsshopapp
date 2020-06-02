@@ -4,7 +4,6 @@ import {
   duplicateShopifyProduct,
 } from "../shopifyApi/product";
 import { getConnection } from "typeorm";
-import { VariantGroup } from "../../database/models/VariantGroup";
 import { getAllVariants } from "./variant-group";
 
 /**

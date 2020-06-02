@@ -23,7 +23,6 @@ const router = Router();
 // GET /api/variants/3
 router.get("/:id", async (ctx) => {
   let product = await getAllVariantsForProductId(ctx.params.id);
-
   if (!product) return (ctx.status = 404);
 
   ctx.status = 200;
@@ -52,7 +51,6 @@ router.post("/", async (ctx) => {
 
   let seenSellByWeight = false;
   variants.forEach((v) => {
-    console.log(v);
     if (seenSellByWeight && v.modifierType == VariantGroupType.WEIGHT) {
       ctx.status = 400;
       ctx.body = {
@@ -73,7 +71,8 @@ router.post("/", async (ctx) => {
   let product = await getProduct(baseProductId);
 
   if (product === undefined) {
-    product = await createProduct(baseProductId);
+    await createProduct(baseProductId);
+    product = await getProduct(baseProductId);
   }
 
   const { shop, accessToken } = ctx.session;

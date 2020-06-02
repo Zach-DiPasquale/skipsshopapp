@@ -270,12 +270,9 @@ export const autoUpdateVariants = async (shop, product) => {
       return newV;
     });
 
-    console.log(newVariants);
-
     let res = await updateShopifyProduct(shop, access.oauthToken, {
       id: p.variantShopifyProductId,
       variants: newVariants,
     });
-    console.log(res);
   }
 };
