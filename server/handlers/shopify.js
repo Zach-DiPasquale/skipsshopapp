@@ -162,6 +162,8 @@ const createVariantCombos = (
           sv.option2Variant = o2.id;
           sv.option3Variant = o3.id;
 
+          sv.inventory_policy = "continue";
+
           if (variantGroups[0].modifierType === VariantGroupType.WEIGHT) {
             let multiplier = parseFloat(o1.modifierValue / 16);
             price = price * multiplier;
@@ -200,6 +202,8 @@ const createVariantCombos = (
         sv.option1Variant = o1.id;
         sv.option2Variant = o2.id;
 
+        sv.inventory_policy = "continue";
+
         if (variantGroups[0].modifierType === VariantGroupType.WEIGHT) {
           let multiplier = parseFloat(o1.modifierValue / 16);
           price = price * multiplier;
@@ -228,6 +232,7 @@ const createVariantCombos = (
       sv.option1 = o1.label;
 
       sv.option1Variant = o1.id;
+      sv.inventory_policy = "continue";
 
       if (variantGroups[0].modifierType === VariantGroupType.WEIGHT) {
         let multiplier = parseFloat(o1.modifierValue / 16);
