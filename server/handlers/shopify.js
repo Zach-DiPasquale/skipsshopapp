@@ -168,6 +168,8 @@ const createVariantCombos = (
             let multiplier = parseFloat(o1.modifierValue / 16);
             price = price * multiplier;
             sv.toMultiply = multiplier;
+            sv.weight = o1.modifierValue;
+            sv.weight_unit = "oz";
           } else if (variantGroups[0].modifierType === VariantGroupType.FEE) {
             let toAdd = parseFloat(o1.modifierValue);
             price += parseFloat(toAdd);
@@ -208,6 +210,8 @@ const createVariantCombos = (
           let multiplier = parseFloat(o1.modifierValue / 16);
           price = price * multiplier;
           sv.toMultiply = multiplier;
+          sv.weight = o1.modifierValue;
+          sv.weight_unit = "oz";
         } else if (variantGroups[0].modifierType === VariantGroupType.FEE) {
           let toAdd = parseFloat(o1.modifierValue);
           price += parseFloat(toAdd);
@@ -238,6 +242,8 @@ const createVariantCombos = (
         let multiplier = parseFloat(o1.modifierValue / 16);
         price = price * multiplier;
         sv.toMultiply = multiplier;
+        sv.weight = o1.modifierValue;
+        sv.weight_unit = "oz";
       } else if (variantGroups[0].modifierType === VariantGroupType.FEE) {
         let toAdd = parseFloat(o1.modifierValue);
         price += parseFloat(toAdd);
