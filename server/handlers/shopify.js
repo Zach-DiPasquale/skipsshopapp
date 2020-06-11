@@ -355,7 +355,7 @@ const createUpdateDeletePriceStringMetafield = async (
     return;
   }
 
-  let priceString = `$${productUnitPrice}/${product.weightUnit}`;
+  let priceString = `$${productUnitPrice} ${product.weightUnit}`;
 
   let metafield = {
     key: "SellByWeightPriceString",
