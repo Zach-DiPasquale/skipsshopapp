@@ -50,13 +50,16 @@ export const deleteAllShopifyVariants = async (
   let product = await getAllVariantsForProductId(productId);
   await removeAllShopVariants(productId);
 
-  product.variantGroups.map(async (vg) => {
-    vg.variants.map(async (v) => {
+  for (let index = 0; index < product.variantGroups.length; index++) {
+    const vg = product.variantGroups[index];
+
+    for (let index = 0; index < vg.variants.length; index++) {
+      const v = vg.variants[index];
       await deleteVariant(v.id);
       await deleteShopifyVariant(shop, accessToken, productId, v.id);
-    });
+    }
     await deleteVariantGroup(vg.id);
-  });
+  }
 };
 
 export const syncVariants = async (shop, accessToken, productId) => {
