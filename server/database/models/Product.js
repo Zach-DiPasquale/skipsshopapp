@@ -24,6 +24,18 @@ export class Product {
   @Column({ type: "boolean", nullable: true })
   sellByWeight = undefined;
 
+  @Column({ type: "boolean", nullable: true })
+  priceLabel = undefined;
+
+  @Column({ type: "varchar", nullable: true })
+  priceLabelMetafieldShopifyId = undefined;
+
+  @Column({ type: "varchar", length: 50, nullable: true })
+  additionalLabel = undefined;
+
+  @Column({ type: "varchar", nullable: true })
+  additionalLabelMetafieldShopifyId = undefined;
+
   @Column({
     type: "enum",
     enum: UnitType,

@@ -23,8 +23,11 @@ const router = Router();
 // GET /api/variants/3
 router.get("/:id", async (ctx) => {
   let product = await getAllVariantsForProductId(ctx.params.id);
-  if (!product) return (ctx.status = 404);
 
+  console.log("product1");
+  console.log(product);
+  if (!product) return (ctx.status = 404);
+  console.log("product2");
   ctx.status = 200;
   ctx.body = product;
 });
@@ -35,6 +38,8 @@ router.post("/", async (ctx) => {
   const baseProductId = body.baseProductId;
   const sellByWeight = body.sellByWeight;
   const weightUnit = body.weightUnit;
+  const priceLabel = body.priceLabel;
+  const additionalLabel = body.additionalLabel;
   const variants = body.variants;
 
   if (variants.length > 3) {
@@ -77,6 +82,8 @@ router.post("/", async (ctx) => {
 
   product.sellByWeight = sellByWeight;
   product.weightUnit = weightUnit;
+  product.priceLabel = priceLabel;
+  product.additionalLabel = additionalLabel;
 
   const { shop, accessToken } = ctx.session;
 

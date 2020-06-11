@@ -22,6 +22,23 @@ export const getProduct = async (baseShopifyProductId) => {
 };
 
 /**
+ * Gets a product from the DB
+ *
+ * @param {string} variantShopifyProductId  - base shopify product ID
+ *
+ * @returns one Product
+ */
+export const getProductByVariantId = async (variantShopifyProductId) => {
+  return await getConnection()
+    .getRepository(Product)
+    .createQueryBuilder("product")
+    .where("product.variantShopifyProductId = :id", {
+      id: variantShopifyProductId,
+    })
+    .getOne();
+};
+
+/**
  * Creates and saves a product
  *
  * @param {string} baseShopifyProductId  - base shopify product ID
@@ -60,6 +77,11 @@ export const updateShopifyProduct = async (product) => {
       sellByWeight: product.sellByWeight,
       weightUnit: product.weightUnit,
       priceStringMetafieldShopifyId: product.priceStringMetafieldShopifyId,
+      priceLabel: product.priceLabel,
+      priceLabelMetafieldShopifyId: product.priceLabelMetafieldShopifyId,
+      additionalLabel: product.additionalLabel,
+      additionalLabelMetafieldShopifyId:
+        product.additionalLabelMetafieldShopifyId,
     })
     .where("baseShopifyProductId = :id", { id: product.baseShopifyProductId })
     .execute()
@@ -68,11 +90,19 @@ export const updateShopifyProduct = async (product) => {
 
 export const getAllVariantsForProductId = async (productId) => {
   let product = await getProduct(productId);
+
+  if (!product) {
+    product = await getProductByVariantId(productId);
+  }
+
   if (!product) return null;
+
+  console.log(product);
+
   product.variantGroups = await getConnection()
     .createQueryBuilder()
     .relation(Product, "variantGroups")
-    .of(productId) // you can use just post id as well
+    .of(product.baseShopifyProductId)
     .loadMany();
   for (let index = 0; index < product.variantGroups.length; index++) {
     const variantGroup = product.variantGroups[index];

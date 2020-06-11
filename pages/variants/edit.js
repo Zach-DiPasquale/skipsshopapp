@@ -48,7 +48,12 @@ const fetcher = async (path) => {
   return fetch(path)
     .then((res) => {
       if (res.status === 404) {
-        return { sellByWeight: false, weightUnit: "lb", variantGroups: [] };
+        return {
+          sellByWeight: false,
+          weightUnit: "lb",
+          variantGroups: [],
+          status: "404",
+        };
       }
       if (!res.ok) {
         throw Error(res.statusText);
@@ -63,7 +68,11 @@ const fetcher = async (path) => {
 
 function FormOnSubmitExample({ price, productId, product }) {
   const [sellByWeight, setSellByWeight] = useState(product.sellByWeight);
+  const [priceLabel, setPriceLabel] = useState(product.priceLabel);
   const [unitSelected, setUnitSelected] = useState(product.weightUnit);
+  const [additionalLabel, setAdditionalLabel] = useState(
+    product.additionalLabel
+  );
 
   const [variants, setVariants] = useState(product.variantGroups);
 
@@ -100,6 +109,11 @@ function FormOnSubmitExample({ price, productId, product }) {
     []
   );
 
+  const handlePriceLabelChange = useCallback(
+    (value) => setPriceLabel(value),
+    []
+  );
+
   const handleVariantSelectChange = (index, value) => {
     const updatedVariant = variants[index];
     updatedVariant.modifierType = value;
@@ -109,8 +123,10 @@ function FormOnSubmitExample({ price, productId, product }) {
   const handleSubmit = () => {
     const body = {
       baseProductId: productId,
-      sellByWeight: sellByWeight,
+      sellByWeight,
       weightUnit: unitSelected,
+      priceLabel,
+      additionalLabel,
       variants: variants,
     };
     setErrorMessage("");
@@ -214,31 +230,63 @@ function FormOnSubmitExample({ price, productId, product }) {
       <Form>
         <FormLayout>
           <Card title="General" sectioned>
-            <Checkbox
-              label="Mark this product as 'Sell by Weight'"
-              checked={sellByWeight}
-              onChange={handleSellByWeightChange}
-              helpText={
-                <span>
-                  We'll use this to show to the customer the price per unit.
-                </span>
-              }
-            />
-            {sellByWeight ? (
-              <Select
-                label="Unit"
-                options={unitOptions}
-                onChange={handleUnitSelectChange}
-                value={unitSelected}
+            <Card.Section title={"Unit Labels"}>
+              <Checkbox
+                label="Show and additional price by unit label above default shopify price"
+                checked={sellByWeight}
+                onChange={handleSellByWeightChange}
                 helpText={
                   <span>
-                    This is the unit that we'll use to display to the customer.
+                    We'll use this to show to the customer the price per unit.
                   </span>
                 }
               />
-            ) : (
-              <></>
-            )}
+              <Checkbox
+                label="Prepend a label to the end of a products price."
+                checked={priceLabel}
+                onChange={handlePriceLabelChange}
+                helpText={
+                  <span>
+                    By default, all products are prepended with 'ea.'. Example
+                    $2.39/lb.
+                  </span>
+                }
+              />
+              {sellByWeight || priceLabel ? (
+                <Select
+                  label="Unit"
+                  options={unitOptions}
+                  onChange={handleUnitSelectChange}
+                  value={unitSelected}
+                  helpText={
+                    <span>
+                      This will display an addition label to the customer to
+                      show the price by weight.
+                    </span>
+                  }
+                />
+              ) : (
+                <></>
+              )}
+            </Card.Section>
+            <Card.Section title={"Additional Labels"}>
+              <TextField
+                value={additionalLabel}
+                onChange={(newValue) => {
+                  setAdditionalLabel(newValue);
+                }}
+                label="Product subtitle"
+                modifierType="text"
+                maxLength={50}
+                showCharacterCount
+                helpText={
+                  <span>
+                    Adds an additional label under the product title to give the
+                    customer more information on how this product is sold.
+                  </span>
+                }
+              />
+            </Card.Section>
           </Card>
           <Card
             title="Variants"
@@ -446,10 +494,6 @@ const VariantEdit = () => {
   const productId = router.query.id;
   const shop = router.query.shop;
 
-  const { loading, error, data } = useQuery(GET_PRODUCT, {
-    variables: { query: `${productId}` },
-  });
-
   const { data: product, APIerror } = useSWR(
     "/api/variants/" + productId,
     fetcher
@@ -457,6 +501,24 @@ const VariantEdit = () => {
 
   if (APIerror) return <div>failed to load</div>;
   if (!product) return "Loading Product Variant Data";
+
+  let sourceProductId = product.baseShopifyProductId
+    ? product.baseShopifyProductId
+    : productId;
+
+  return (
+    <VariantEditContent
+      productId={sourceProductId}
+      product={product}
+      shop={shop}
+    />
+  );
+};
+
+const VariantEditContent = ({ productId, product, shop }) => {
+  let { loading, error, data } = useQuery(GET_PRODUCT, {
+    variables: { query: `${productId}` },
+  });
 
   if (error) return `Error! ${error.message}`;
   if (loading) return "Loading...";
@@ -474,7 +536,7 @@ const VariantEdit = () => {
           <strong>{shopifyProduct.title}</strong> has{" "}
           <strong>{shopifyProduct.totalVariants}</strong> variants. You need to
           use Revel POS products with this app. Products that have variants from
-          this app will have a "RevelSourceProduct" tag.
+          this app will have the "auto" tag.
           <br />
           To use this feature, remove all variants from this product on the
           Shopify Product page.

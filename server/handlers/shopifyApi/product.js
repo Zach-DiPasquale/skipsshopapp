@@ -4,6 +4,7 @@ import {
   productGetUpdate,
   productCreate,
   productMetafieldCreate,
+  productMetafieldUpdate,
 } from "./roots";
 
 export const getShopifyProduct = async (shop, accessToken, productId) => {
@@ -126,7 +127,29 @@ export const updateShopifyProductMetadata = async (
     .then((json) => json)
     .catch((e) => {
       console.warn(
-        `Something went wrong when creating the product metafield. The unit price is likely not being displayed on the website. ${e}`
+        `Something went wrong when updating the product metafield. The unit price is likely not being displayed on the website. ${e}`
+      );
+    });
+};
+
+export const deleteShopifyProductMetadata = async (
+  shop,
+  accessToken,
+  productId,
+  metafieldId
+) => {
+  return fetch(productMetafieldUpdate(shop, productId, metafieldId), {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": accessToken,
+    },
+  })
+    .then((res) => res.json())
+    .then((json) => json)
+    .catch((e) => {
+      console.warn(
+        `Something went wrong when deleting the product metafield. The unit price is likely not being displayed on the website. ${e}`
       );
     });
 };

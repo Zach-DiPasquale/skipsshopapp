@@ -1,7 +1,11 @@
 import { createVariant, deleteVariant } from "./db/variant";
 import { VariantGroupType } from "../database/models/VariantGroup";
 import { Variant } from "../database/models/Variant";
-import { getAllVariantsForProductId, getProduct } from "./db/product";
+import {
+  getAllVariantsForProductId,
+  getProduct,
+  updateShopifyProduct as updateProduct,
+} from "./db/product";
 import { deleteShopifyVariant } from "./shopifyApi/variants";
 import { deleteVariantGroup } from "./db/variant-group";
 import {
@@ -9,6 +13,7 @@ import {
   getShopifyProduct,
   updateShopifyProductMetadata,
   createShopifyProductMetafield,
+  deleteShopifyProductMetadata,
 } from "./shopifyApi/product";
 import { ShopifyVariant } from "../database/models/ShopifyVariant";
 import {
@@ -64,8 +69,12 @@ export const syncVariants = async (shop, accessToken, productId) => {
   // update product options
   let options = [];
 
-  let productUnitPrice = (await getShopifyProduct(shop, accessToken, productId))
-    .product.variants[0].price;
+  let rootShopifyVariant = (
+    await getShopifyProduct(shop, accessToken, productId)
+  ).product.variants[0];
+
+  let productUnitPrice = rootShopifyVariant.price;
+  let isProductTaxable = rootShopifyVariant.taxable;
 
   let variantGroups = sortVariantGroups(product.variantGroups);
 
@@ -87,6 +96,7 @@ export const syncVariants = async (shop, accessToken, productId) => {
     optionList3,
     variantGroups,
     productUnitPrice,
+    isProductTaxable,
     productId
   );
 
@@ -133,7 +143,7 @@ export const syncVariants = async (shop, accessToken, productId) => {
   }
   await createShopifyVariants(variants);
 
-  await updateMetafield(shop, accessToken, product, productUnitPrice);
+  await updateMetafields(shop, accessToken, product, productUnitPrice);
 
   return { error: false, message: "" };
 };
@@ -144,6 +154,7 @@ const createVariantCombos = (
   option3,
   variantGroups,
   productUnitPrice,
+  isTaxable,
   productId
 ) => {
   let variants = [];
@@ -163,6 +174,7 @@ const createVariantCombos = (
           sv.option3Variant = o3.id;
 
           sv.inventory_policy = "continue";
+          sv.taxable = isTaxable;
 
           if (variantGroups[0].modifierType === VariantGroupType.WEIGHT) {
             let multiplier = parseFloat(o1.modifierValue / 16);
@@ -205,6 +217,7 @@ const createVariantCombos = (
         sv.option2Variant = o2.id;
 
         sv.inventory_policy = "continue";
+        sv.taxable = isTaxable;
 
         if (variantGroups[0].modifierType === VariantGroupType.WEIGHT) {
           let multiplier = parseFloat(o1.modifierValue / 16);
@@ -236,7 +249,9 @@ const createVariantCombos = (
       sv.option1 = o1.label;
 
       sv.option1Variant = o1.id;
+
       sv.inventory_policy = "continue";
+      sv.taxable = isTaxable;
 
       if (variantGroups[0].modifierType === VariantGroupType.WEIGHT) {
         let multiplier = parseFloat(o1.modifierValue / 16);
@@ -294,21 +309,53 @@ export const autoUpdateVariants = async (shop, product) => {
       variants: newVariants,
     });
 
-    updateMetafield(shop, access.oauthToken, p, product.variants[0].price);
+    updateMetafields(shop, access.oauthToken, p, product.variants[0].price);
   }
 };
 
-const updateMetafield = async (
+const updateMetafields = async (
   shop,
   accessToken,
   product,
   productUnitPrice
 ) => {
-  let priceString = "";
+  createUpdateDeletePriceStringMetafield(
+    shop,
+    accessToken,
+    product,
+    productUnitPrice
+  );
+  createUpdateDeletePriceLabelMetafield(shop, accessToken, product);
+  createUpdateDeleteAdditionalLabelMetafield(shop, accessToken, product);
+};
 
-  if (product.sellByWeight) {
-    priceString = `$${productUnitPrice}/${product.weightUnit}`;
+const createUpdateDeletePriceStringMetafield = async (
+  shop,
+  accessToken,
+  product,
+  productUnitPrice
+) => {
+  if (!product.sellByWeight && product.priceStringMetafieldShopifyId) {
+    let res = await deleteShopifyProductMetadata(
+      shop,
+      accessToken,
+      product,
+      product.priceStringMetafieldShopifyId
+    );
+    product.priceStringMetafieldShopifyId = null;
+    await updateProduct(product);
+
+    console.log("priceString delete");
+    console.log(res);
+
+    return;
   }
+
+  if (!product.sellByWeight) {
+    return;
+  }
+
+  let priceString = `$${productUnitPrice}/${product.weightUnit}`;
 
   let metafield = {
     key: "SellByWeightPriceString",
@@ -324,7 +371,10 @@ const updateMetafield = async (
       product.variantShopifyProductId,
       metafield
     );
-    console.log("create");
+
+    product.priceStringMetafieldShopifyId = res.metafield.id;
+    await updateProduct(product);
+    console.log("priceString create");
     console.log(res);
   } else {
     metafield.id = product.priceStringMetafieldShopifyId;
@@ -334,7 +384,125 @@ const updateMetafield = async (
       product.variantShopifyProductId,
       metafield
     );
-    console.log("update");
+    console.log("priceString update");
+    console.log(res);
+  }
+};
+
+const createUpdateDeletePriceLabelMetafield = async (
+  shop,
+  accessToken,
+  product
+) => {
+  if (!product.priceLabel && product.priceLabelMetafieldShopifyId) {
+    let res = await deleteShopifyProductMetadata(
+      shop,
+      accessToken,
+      product,
+      product.priceLabelMetafieldShopifyId
+    );
+
+    product.priceLabelMetafieldShopifyId = null;
+    await updateProduct(product);
+
+    console.log("pricelabel delete");
+    console.log(res);
+    return;
+  }
+
+  if (!product.priceLabel) {
+    return;
+  }
+
+  let metafield = {
+    key: "PriceUnit",
+    value: product.weightUnit,
+    value_type: "string",
+    namespace: "global",
+  };
+
+  if (!product.priceLabelMetafieldShopifyId) {
+    let res = await createShopifyProductMetafield(
+      shop,
+      accessToken,
+      product.variantShopifyProductId,
+      metafield
+    );
+
+    product.priceLabelMetafieldShopifyId = res.metafield.id;
+    await updateProduct(product);
+
+    console.log("pricelabel create");
+    console.log(res);
+  } else {
+    metafield.id = product.priceLabelMetafieldShopifyId;
+    let res = await updateShopifyProductMetadata(
+      shop,
+      accessToken,
+      product.variantShopifyProductId,
+      metafield
+    );
+
+    console.log("pricelabel update");
+    console.log(res);
+  }
+};
+
+const createUpdateDeleteAdditionalLabelMetafield = async (
+  shop,
+  accessToken,
+  product
+) => {
+  if (!product.additionalLabel && product.additionalLabelMetafieldShopifyId) {
+    let res = await deleteShopifyProductMetadata(
+      shop,
+      accessToken,
+      product,
+      product.additionalLabelMetafieldShopifyId
+    );
+
+    product.additionalLabelMetafieldShopifyId = null;
+    await updateProduct(product);
+
+    console.log("add label delete");
+    console.log(res);
+    return;
+  }
+
+  if (!product.additionalLabel) {
+    return;
+  }
+
+  let metafield = {
+    key: "Subtitle",
+    value: product.additionalLabel,
+    value_type: "string",
+    namespace: "global",
+  };
+
+  if (!product.additionalLabelMetafieldShopifyId) {
+    let res = await createShopifyProductMetafield(
+      shop,
+      accessToken,
+      product.variantShopifyProductId,
+      metafield
+    );
+
+    product.additionalLabelMetafieldShopifyId = res.metafield.id;
+    updateProduct(product);
+
+    console.log("add label create");
+    console.log(res);
+  } else {
+    metafield.id = product.additionalLabelMetafieldShopifyId;
+    let res = await updateShopifyProductMetadata(
+      shop,
+      accessToken,
+      product.variantShopifyProductId,
+      metafield
+    );
+
+    console.log("add label update");
     console.log(res);
   }
 };
