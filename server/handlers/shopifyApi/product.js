@@ -57,7 +57,7 @@ export const duplicateShopifyProduct = async (shop, accessToken, product) => {
     product_type: product.product_type,
     published: false,
     published_scope: "global",
-    tags: `${product.tags}, visible`,
+    tags: `visible`,
   };
 
   let updatedBaseProduct = {
