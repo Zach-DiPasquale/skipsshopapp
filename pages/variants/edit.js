@@ -277,7 +277,7 @@ function FormOnSubmitExample({ price, productId, product }) {
                 }}
                 label="Product subtitle"
                 modifierType="text"
-                maxLength={50}
+                maxLength={75}
                 showCharacterCount
                 helpText={
                   <span>
