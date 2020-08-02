@@ -57,14 +57,14 @@ export const duplicateShopifyProduct = async (shop, accessToken, product) => {
     product_type: product.product_type,
     published: false,
     published_scope: "global",
+    tags: `${product.tags}, visible`,
   };
 
   let updatedBaseProduct = {
     id: product.id,
-    title: `AUTOMATIC (DO NOT TOUCH) ${product.title}`,
-    handle: `auth-${product.handle}`,
+    handle: `auto-${product.handle}`,
     published: false,
-    tags: `${product.tags}, auto`,
+    tags: `${product.tags}, source`,
   };
 
   await updateShopifyProduct(shop, accessToken, updatedBaseProduct);

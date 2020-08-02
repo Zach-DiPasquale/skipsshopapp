@@ -7,3 +7,11 @@ This app is a propriety custom Shopify app designed to meet the unique needs of 
 ## Built with Shopify CLI
 
 This custom Shopify app was built using the Shopify CLI [boilerplate](https://github.com/Shopify/shopify-app-node). All boilerplate remains under its respective license.
+
+## Run
+
+use `shopify serve`
+
+## Deploy to Heroku
+
+pushing changes to master will deploy build.
