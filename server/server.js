@@ -41,12 +41,19 @@ app.prepare().then(() => {
           server
         )
       );
+
+      router.get("/status", (ctx) => {
+        ctx.body = "On-line";
+        ctx.res.statusCode = 200;
+      });
+
       server.keys = [SHOPIFY_API_SECRET];
       server.use(
         createShopifyAuth({
           apiKey: SHOPIFY_API_KEY,
           secret: SHOPIFY_API_SECRET,
           scopes: [SCOPES],
+          accessMode: "offline",
 
           async afterAuth(ctx) {
             //Auth token and shop available in session
@@ -92,6 +99,7 @@ app.prepare().then(() => {
         }
         await koaBody()(ctx, next);
       });
+
       router.use("/api", apiRouter.routes());
 
       router.get("*", verifyRequest(), async (ctx) => {
