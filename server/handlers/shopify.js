@@ -22,6 +22,7 @@ import {
   getAllShopifyVariants,
 } from "./db/shopify-variant";
 import { getAccess } from "./db/access";
+import { responsePathAsArray } from "graphql";
 
 export const createUpdateVariants = async (variants, variantGroup) => {
   let variantIdList = [];
@@ -311,6 +312,11 @@ export const autoUpdateVariants = async (shop, product) => {
       id: p.variantShopifyProductId,
       variants: newVariants,
     });
+
+    if (!res.ok) {
+      console.log(res.status);
+      res.json().then((json) => console.error(json));
+    }
 
     updateMetafields(shop, access.oauthToken, p, product.variants[0].price);
   }
