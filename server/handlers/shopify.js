@@ -10,6 +10,7 @@ import { deleteShopifyVariant } from "./shopifyApi/variants";
 import { deleteVariantGroup } from "./db/variant-group";
 import {
   updateShopifyProduct,
+  updateShopifyProduct2,
   getShopifyProduct,
   updateShopifyProductMetadata,
   createShopifyProductMetafield,
@@ -23,6 +24,8 @@ import {
 } from "./db/shopify-variant";
 import { getAccess } from "./db/access";
 import { responsePathAsArray } from "graphql";
+import { createStatus, updateStatus } from "./db/status";
+import { Status, UpdateStatus } from "../database/models/UpdateStatus";
 
 export const createUpdateVariants = async (variants, variantGroup) => {
   let variantIdList = [];
@@ -295,6 +298,13 @@ export const autoUpdateVariants = async (shop, product) => {
   let access = await getAccess(shop);
   let p = await getProduct(product.id);
   if (p) {
+    // Update status of product update
+    console.log(`${product.title} is beginning to update its variants`);
+    var status = new UpdateStatus();
+    status.productName = product.title;
+    status.status = Status.IN_PROGRESS;
+    var statusId = await createStatus(status);
+
     let allVariants = await getAllShopifyVariants(p.baseShopifyProductId);
     allVariants.sort((a, b) => a.position - b.position);
     let newVariants = allVariants.map((v) => {
@@ -308,17 +318,42 @@ export const autoUpdateVariants = async (shop, product) => {
       return newV;
     });
 
-    let res = await updateShopifyProduct(shop, access.oauthToken, {
+    status.id = statusId;
+    updateShopifyProduct2(shop, access.oauthToken, {
       id: p.variantShopifyProductId,
       variants: newVariants,
-    });
+    })
+      .then((res) => {
+        if (res.ok) {
+          status.status = Status.SUCCESS;
+        } else {
+          status.status = Status.FAILURE;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (status.status == Status.FAILURE) {
+          status.message = json;
+          console.error(json);
+        } else {
+          console.log(json);
+        }
 
-    if (!res.ok) {
-      console.log(res.status);
-      res.json().then((json) => console.error(json));
-    }
-
-    updateMetafields(shop, access.oauthToken, p, product.variants[0].price);
+        updateMetafields(shop, access.oauthToken, p, product.variants[0].price);
+        updateStatus(status);
+        console.log(
+          `${product.title} update completed with status: ${status.status}`
+        );
+        return json;
+      })
+      .catch((e) => {
+        console.error(`Something went wrong when updating a product ${e}`);
+        status.status = Status.FAILURE;
+        status.message = `${e}\n\n${status.message}`;
+        updateStatus(status);
+      });
+  } else {
+    console.log(`${product.title} does not need to update any variants`);
   }
 };
 

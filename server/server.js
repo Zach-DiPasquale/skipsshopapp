@@ -14,6 +14,7 @@ import { createConnection } from "typeorm";
 import { Access } from "./database/models/Access";
 
 import apiRouter from "./api";
+import statusRouter from "./api/status";
 import { autoUpdateVariants } from "./handlers/shopify";
 
 dotenv.config();
@@ -42,10 +43,7 @@ app.prepare().then(() => {
         )
       );
 
-      router.get("/status", (ctx) => {
-        ctx.body = "On-line";
-        ctx.res.statusCode = 200;
-      });
+      router.use("/status", statusRouter.routes());
 
       server.keys = [SHOPIFY_API_SECRET];
       server.use(
@@ -105,7 +103,7 @@ app.prepare().then(() => {
       router.get("*", verifyRequest(), async (ctx) => {
         await handle(ctx.req, ctx.res);
         ctx.respond = false;
-        ctx.res.statusCode = 200;
+        ctx.response.status = 200;
       });
 
       server.use(router.allowedMethods());

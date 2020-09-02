@@ -34,7 +34,7 @@ export const createShopifyProduct = async (shop, accessToken, product) => {
     });
 };
 
-export const updateShopifyProduct = async (shop, accessToken, product) => {
+export const updateShopifyProduct2 = async (shop, accessToken, product) => {
   return fetch(productGetUpdate(shop, product.id), {
     method: "PUT",
     body: JSON.stringify({ product }),
@@ -42,7 +42,11 @@ export const updateShopifyProduct = async (shop, accessToken, product) => {
       "Content-Type": "application/json",
       "X-Shopify-Access-Token": accessToken,
     },
-  })
+  });
+};
+
+export const updateShopifyProduct = async (shop, accessToken, product) => {
+  return updateShopifyProduct2(shop, accessToken, product)
     .then((res) => res.json())
     .then((json) => json)
     .catch((e) => {

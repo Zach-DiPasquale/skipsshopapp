@@ -3,7 +3,7 @@ const router = Router();
 
 router.get("/test", (ctx) => {
   ctx.body = "hello";
-  ctx.res.statusCode = 200;
+  ctx.response.status = 200;
 });
 
 export default router;
