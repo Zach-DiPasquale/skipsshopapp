@@ -1,4 +1,4 @@
-import { variants } from "./roots";
+import { variants } from "./routes";
 
 export const deleteShopifyVariant = async (
   shop,
