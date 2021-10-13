@@ -23,10 +23,15 @@ import {
   getAllShopifyVariants,
 } from "./db/shopify-variant";
 import { getAccess } from "./db/access";
-import { responsePathAsArray } from "graphql";
 import { createStatus, updateStatus } from "./db/status";
 import { Status, UpdateStatus } from "../database/models/UpdateStatus";
 
+/**
+ * Creates the variants in the DB
+ * @param {list} variants
+ * @param {object} variantGroup
+ * @returns
+ */
 export const createUpdateVariants = async (variants, variantGroup) => {
   let variantIdList = [];
 
@@ -46,6 +51,12 @@ export const createUpdateVariants = async (variants, variantGroup) => {
   return variantIdList;
 };
 
+/**
+ * Deletes all variants from the DB and shopify for an product
+ * @param {string} shop - the shop name
+ * @param {string} accessToken - the access token for that shop
+ * @param {number} productId  - the product id to delete all variants in shopify for
+ */
 export const deleteAllShopifyVariants = async (
   shop,
   accessToken,
@@ -66,6 +77,13 @@ export const deleteAllShopifyVariants = async (
   }
 };
 
+/**
+ * Sync a products variants with shopify
+ * @param {string} shop - the name of the shopify store
+ * @param {string} accessToken - the access token for the shopify store
+ * @param {number} productId - the Id of the product for which variants to update
+ * @returns the status of the sync
+ */
 export const syncVariants = async (shop, accessToken, productId) => {
   let product = await getAllVariantsForProductId(productId);
 
@@ -155,7 +173,18 @@ export const syncVariants = async (shop, accessToken, productId) => {
   return { error: false, message: "" };
 };
 
-const createVariantCombos = (
+/**
+ * creates a list of shopify variants for a product
+ * @param {list} option1 - list of variants for variant group 1
+ * @param {list} option2 - list of variants for variant group 2
+ * @param {list} option3 - list of variants for variant group 3
+ * @param {list} variantGroups - all the variant groups
+ * @param {number} productUnitPrice - the unit price of the original product
+ * @param {bool} isTaxable - true if the product is taxable
+ * @param {number} productId - the id of the shopify product
+ * @returns
+ */
+export const createVariantCombos = (
   option1,
   option2,
   option3,
@@ -206,6 +235,7 @@ const createVariantCombos = (
             price += parseFloat(toAdd);
             sv.toAdd += toAdd;
           }
+
           sv.price = price;
           variants.push(sv);
         });
@@ -279,7 +309,12 @@ const createVariantCombos = (
   return variants;
 };
 
-const sortVariantGroups = (variantGroups) => {
+/**
+ * Sort the list of variant groups so that WEIGHT type is always first
+ * @param {list} variantGroups - list of variant groups
+ * @returns a sorted list of variant groups
+ */
+export const sortVariantGroups = (variantGroups) => {
   return variantGroups.sort((a, b) => {
     if (a.modifierType === VariantGroupType.WEIGHT) {
       return -1;
@@ -294,6 +329,11 @@ const sortVariantGroups = (variantGroups) => {
   });
 };
 
+/**
+ *
+ * @param {string} shop - the shopify store
+ * @param {object} product - the shopify product that was updated
+ */
 export const autoUpdateVariants = async (shop, product) => {
   let access = await getAccess(shop);
   let p = await getProduct(product.id);
@@ -357,6 +397,13 @@ export const autoUpdateVariants = async (shop, product) => {
   }
 };
 
+/**
+ * update the shopify metafields
+ * @param {string} shop - the shopify store name
+ * @param {string} accessToken - the access token for that store
+ * @param {object} product - the product to update
+ * @param {number} productUnitPrice - the unit price of the product
+ */
 const updateMetafields = async (
   shop,
   accessToken,
@@ -492,6 +539,12 @@ const createUpdateDeletePriceLabelMetafield = async (
   }
 };
 
+/**
+ * Creates, updates, or deletes shopify label metafield
+ * @param {string} shop - the name of the shopify shop
+ * @param {string} accessToken - the access token for the shop
+ * @param {object} product - the product to update metafields for
+ */
 const createUpdateDeleteAdditionalLabelMetafield = async (
   shop,
   accessToken,

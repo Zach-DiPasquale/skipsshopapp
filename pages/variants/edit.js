@@ -21,6 +21,7 @@ import { useQuery } from "@apollo/react-hooks";
 import { useRouter } from "next/router";
 import fetch from "node-fetch";
 import useSWR from "swr";
+import { postVariants } from "../api";
 
 const GET_PRODUCT = gql`
   query products($query: String!) {
@@ -66,7 +67,7 @@ const fetcher = async (path) => {
     });
 };
 
-function FormOnSubmitExample({ price, productId, product }) {
+function VariantForm({ price, productId, product }) {
   const [sellByWeight, setSellByWeight] = useState(product.sellByWeight);
   const [priceLabel, setPriceLabel] = useState(product.priceLabel);
   const [unitSelected, setUnitSelected] = useState(product.weightUnit);
@@ -130,24 +131,7 @@ function FormOnSubmitExample({ price, productId, product }) {
       variants: variants,
     };
     setErrorMessage("");
-    fetch("/api/variants", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          toggleErrorActive();
-        }
-        return res.json();
-      })
-      .then((json) => {
-        if (json.error) {
-          setErrorMessage(json.message);
-        } else {
-          toggleSuccessActive();
-        }
-      });
+    postVariants(body, toggleSuccessActive, setErrorMessage);
   };
 
   const unitOptions = [
@@ -571,7 +555,7 @@ const VariantEditContent = ({ productId, product, shop }) => {
           <strong>Price:</strong> {shopifyProduct.variants.edges[0].node.price}
         </p>
         <br />
-        <FormOnSubmitExample
+        <VariantForm
           price={shopifyProduct.variants.edges[0].node.price}
           productId={productId}
           product={product}

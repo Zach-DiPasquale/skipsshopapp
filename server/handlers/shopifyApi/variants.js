@@ -1,5 +1,13 @@
 import { variants } from "./routes";
 
+/**
+ *
+ * @param {*} shop
+ * @param {*} accessToken
+ * @param {*} productId
+ * @param {*} variantId
+ * @returns
+ */
 export const deleteShopifyVariant = async (
   shop,
   accessToken,
