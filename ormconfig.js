@@ -8,4 +8,7 @@ module.exports = {
   cli: {
     migrationsDir: "server/database/migrations",
   },
+  extra: {
+    ssl: true,
+  },
 };

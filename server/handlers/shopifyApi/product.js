@@ -5,7 +5,7 @@ import {
   productCreate,
   productMetafieldCreate,
   productMetafieldUpdate,
-} from "./roots";
+} from "./routes";
 
 export const getShopifyProduct = async (shop, accessToken, productId) => {
   return fetch(productGetUpdate(shop, productId), {
