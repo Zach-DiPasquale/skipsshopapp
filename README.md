@@ -2,7 +2,7 @@
 
 ![Node.js CI](https://github.com/Zach-DiPasquale/skipsshopapp/workflows/Node.js%20CI/badge.svg)
 
-This app is a propriety custom Shopify app designed to meet the unique needs of [https://shop-skips-meat-market.myshopify.com/](https://shop-skips-meat-market.myshopify.com/).
+This app is a propriety custom Shopify app designed to meet the unique needs of [https://shop-skips-meat-market.myshopify.com/](https://shop-skips-meat-market.myshopify.com/). You may not use commercially without express writen consent. Copyright 2021 Zachary DiPasquale.
 
 This custom Shopify app give the ability to sell weighted items on a Shopify store front. Skip's Meat Market offers a
 wide range of meat products in store. Each item has many customizations and can be cut, trimmed, chopped, or sliced
